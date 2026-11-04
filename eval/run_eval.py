@@ -3,6 +3,7 @@
 Dùng DB test tạm (tự tạo, tự xoá) nên không đụng dữ liệu dev.
 Provider nào đang bật (thật/giả) phụ thuộc .env — kết quả ghi rõ trong REPORT.md.
 """
+
 import json
 import os
 import statistics
@@ -52,8 +53,10 @@ def build_corpus():
     }
     for stem, (dept, vis) in ACL.items():
         d = Document.objects.create(
-            title=stem, owner=users["hr" if dept == "HR" else "eng"],
-            department=depts[dept], visibility=vis,
+            title=stem,
+            owner=users["hr" if dept == "HR" else "eng"],
+            department=depts[dept],
+            visibility=vis,
         )
         d.file.save(f"{stem}.md", ContentFile((ROOT / "corpus" / f"{stem}.md").read_bytes()))
         ingest(d.pk)
@@ -112,8 +115,10 @@ def main():
     out = ROOT / "results"
     out.mkdir(exist_ok=True)
     (out / "latest.json").write_text(json.dumps(results, indent=2))
-    rows = ["| Cấu hình | hit-rate@5 | MRR | rò rỉ (forbidden) | latency TB (ms) | p95 (ms) |",
-            "|---|---|---|---|---|---|"]
+    rows = [
+        "| Cấu hình | hit-rate@5 | MRR | rò rỉ (forbidden) | latency TB (ms) | p95 (ms) |",
+        "|---|---|---|---|---|---|",
+    ]
     for n, r in results.items():
         rows.append(
             f"| {n} | {r[f'hit_rate@{K}']:.2f} | {r['mrr']:.2f} | "

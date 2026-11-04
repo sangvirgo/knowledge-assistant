@@ -11,5 +11,6 @@ urlpatterns = [
     path("login/", auth_views.LoginView.as_view(template_name="login.html"), name="login"),
     path("api/", include("apps.documents.urls")),
     path("api/", include("apps.chat.urls")),
+    path("api/", include("apps.agent.urls")),
     path("logout/", auth_views.LogoutView.as_view(), name="logout"),
 ]

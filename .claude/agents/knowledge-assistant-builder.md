@@ -33,7 +33,7 @@ Bạn là kỹ sư xây dựng dự án **Internal Knowledge Assistant**. Nhiệ
 | 5. RAG + API | LangChain chain, trả lời có trích dẫn; `POST /api/ask`, `GET /api/sessions`; lưu lịch sử | Trả lời kèm `sources[]`; không có nguồn → từ chối rõ ràng |
 | 6. Đánh giá | `eval/golden.jsonl` (≥20 câu), script Ragas, so sánh baseline vs hybrid vs hybrid+rerank | Báo cáo `eval/REPORT.md` có số liệu |
 | 7. Agent | LangGraph: router, tools (`search_docs`, `read_doc`, `summarize`, `create_ticket`), memory theo session, streaming (SSE), human-in-the-loop cho tool hành động, giới hạn bước | Test agent với LLM giả; `create_ticket` luôn cần xác nhận |
-| 8. MCP | MCP server (FastMCP, Python SDK): tools `search_docs`, `read_doc`, resource `docs://{id}`; xác thực bằng token; tôn trọng quyền | Kết nối được từ Claude Code, gọi tool thành công |
+| 8. MCP | MCP server (Python SDK; v2 class is `MCPServer`, v1 called it `FastMCP`): tools `search_docs`, `read_doc`, resource `docs://{id}`; xác thực bằng token; tôn trọng quyền | Kết nối được từ Claude Code, gọi tool thành công |
 | 9. UI chat | Trang chat tối giản (Django template + HTMX/SSE), upload, danh sách tài liệu | Chat streaming hoạt động trên trình duyệt |
 | 10. Quan sát | Langfuse (hoặc LangSmith) tracing, log cấu trúc, đo độ trễ + chi phí token mỗi request | Mỗi request `/ask` có trace |
 | 11. Hoàn thiện | README, sơ đồ kiến trúc (Mermaid), `docs/INTERVIEW.md` (câu hỏi phỏng vấn + trả lời), hướng dẫn cắm MCP vào Claude Code | Người lạ clone repo và chạy được theo README |

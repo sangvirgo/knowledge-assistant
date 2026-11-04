@@ -19,7 +19,7 @@ Hệ thống hỏi đáp tài liệu nội bộ: người dùng đăng nhập, t
 | Queue | Celery + Redis |
 | RAG | LangChain (loader, splitter, embeddings, retriever) |
 | Agent | LangGraph |
-| MCP | Python MCP SDK (FastMCP) |
+| MCP | Python MCP SDK (`mcp` 2.x: `MCPServer`; 1.x called it `FastMCP`) |
 | Rerank | cross-encoder (vd `bge-reranker`) hoặc API rerank; đặt sau interface để thay được |
 | Đánh giá | Ragas + golden set tự viết |
 | Tracing | Langfuse (self-host qua Docker) hoặc LangSmith |
