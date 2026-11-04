@@ -6,12 +6,18 @@ Spec đầy đủ: skill `knowledge-assistant` (`.claude/skills/knowledge-assist
 Dựng dự án: agent `knowledge-assistant-builder` (`.claude/agents/`), làm theo phase 0 → 11.
 
 ## Trạng thái
-Mới có khung thư mục. Chưa có code. Bắt đầu từ phase 0.
+Phase 0–11 đã dựng xong. Chưa kiểm chứng với LLM/embedding/rerank thật (mặc định dùng bản giả khi thiếu khóa).
 
-## Lệnh (sẽ có sau phase 0-1)
-- `docker compose up` chạy toàn bộ hệ thống
-- `uv run pytest` chạy test
+## Lệnh
+- `docker compose up` chạy toàn bộ hệ thống (web :8000, langfuse :3000, postgres :5433)
+- `uv run pytest` chạy test (cần postgres của compose: `docker compose up -d postgres`)
 - `uv run ruff check .` lint
+- `uv run python -m eval.run_eval` đánh giá retrieval
+- `uv run python -m mcp_server` MCP server (xem docs/mcp-setup.md)
+
+## Sơ đồ
+`apps/{accounts,documents,retrieval,chat,agent}`, `services/{llm,embeddings,rerank,tracing}.py`,
+`mcp_server/`, `eval/`, `docs/`. Fake provider cho test: `set_embedder/set_chat_model/set_reranker`.
 
 ## Quy tắc
 - `views` mỏng → `services` chứa logic → `models`.
@@ -22,3 +28,5 @@ Mới có khung thư mục. Chưa có code. Bắt đầu từ phase 0.
 
 ## Phần người dùng muốn tự viết để hiểu
 Chunking + retrieval, hybrid search + rerank, graph của agent, MCP server. Giữ code tối giản, có chú thích "tại sao", dừng lại giải thích sau khi xong. Phần boilerplate thì làm nhanh.
+
+- Commit nhỏ theo phase, KHÔNG thêm dòng Co-Authored-By.
