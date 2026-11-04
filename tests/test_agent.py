@@ -166,3 +166,20 @@ def test_sse_stream(hr_user):
     assert events[0] == "session" and "tool_call" in events and events[-1] == "done"
     done = [json.loads(b[6:]) for b in body.splitlines() if b.startswith("data: ")][-1]
     assert done["answer"] == "12 ngày [1]"
+
+
+@pytest.mark.django_db(transaction=True)
+def test_every_request_has_trace_and_json_log(hr_user, caplog):
+    import logging
+
+    script(AIMessage(content="x"))
+    with caplog.at_level(logging.INFO, logger="ka.request"):
+        r = client(hr_user).post("/api/agent/ask", {"question": "q"}, format="json").json()
+    rec = json.loads(caplog.records[-1].getMessage())
+    assert r["trace_id"] == rec["trace_id"] and rec["latency_ms"] >= 0 and rec["steps"]
+
+
+@pytest.mark.django_db(transaction=True)
+def test_ask_has_trace(hr_user):
+    r = client(hr_user).post("/api/ask", {"question": "hello"}, format="json").json()
+    assert len(r["trace_id"]) == 32

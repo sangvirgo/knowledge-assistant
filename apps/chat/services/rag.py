@@ -1,7 +1,6 @@
 """RAG: retrieve -> prompt có ngữ cảnh đánh số -> LLM -> chỉ giữ nguồn được trích dẫn."""
 
 import re
-import uuid
 
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
@@ -9,6 +8,7 @@ from langchain_core.prompts import ChatPromptTemplate
 from apps.chat.models import ChatSession, Message
 from apps.retrieval.services import search
 from services.llm import NO_ANSWER, get_chat_model
+from services.tracing import trace_request
 
 PROMPT = ChatPromptTemplate.from_messages(
     [
@@ -39,22 +39,30 @@ def ask(user, question: str, session_id: int | None = None, k: int = 6) -> dict:
         (m.role if m.role == "user" else "ai", m.content)
         for m in session.messages.exclude(role="tool").order_by("-id")[:6][::-1]
     ]
-    trace_id = uuid.uuid4().hex
     Message.objects.create(session=session, role="user", content=question)
 
+    with trace_request("ask", user, session.pk, question) as tracer:
+        answer, sources = _answer(user, question, history, k, tracer)
+        tracer.output = answer
+    trace_id = tracer.trace_id
+    Message.objects.create(
+        session=session, role="assistant", content=answer, sources=sources, trace_id=trace_id
+    )
+    return {"answer": answer, "sources": sources, "trace_id": trace_id, "session_id": session.pk}
+
+
+def _answer(user, question, history, k, tracer):
     results = search(user, question, k=k)
     if not results:  # không có nguồn => từ chối, không gọi LLM
         answer, sources = NO_ANSWER, []
     else:
         chain = PROMPT | get_chat_model() | StrOutputParser()
         answer = chain.invoke(
-            {"context": _format_context(results), "history": history, "question": question}
+            {"context": _format_context(results), "history": history, "question": question},
+            config=tracer.config,
         )
         cited = sorted({int(n) for n in re.findall(r"\[(\d+)\]", answer)})
         sources = [results[n - 1].source_ref for n in cited if 1 <= n <= len(results)]
         if not sources:  # LLM từ chối hoặc không trích dẫn => không phô nguồn
             answer = NO_ANSWER if NO_ANSWER in answer else answer
-    Message.objects.create(
-        session=session, role="assistant", content=answer, sources=sources, trace_id=trace_id
-    )
-    return {"answer": answer, "sources": sources, "trace_id": trace_id, "session_id": session.pk}
+    return answer, sources

@@ -79,3 +79,11 @@ REST_FRAMEWORK = {
 }
 LOGIN_URL = "/login/"
 LOGIN_REDIRECT_URL = "/"
+
+# Log JSON một dòng/request (logger "ka.request") ra stdout để gom log dễ dàng.
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {"console": {"class": "logging.StreamHandler"}},
+    "loggers": {"ka.request": {"handlers": ["console"], "level": "INFO"}},
+}

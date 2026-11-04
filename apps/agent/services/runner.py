@@ -1,6 +1,5 @@
 """Chạy đồ thị và phát sự kiện (dùng chung cho JSON và SSE)."""
 
-import uuid
 from collections.abc import Iterator
 
 from langchain_core.messages import AIMessage, HumanMessage, ToolMessage
@@ -8,6 +7,7 @@ from langgraph.types import Command
 
 from apps.agent.models import PendingAction
 from apps.chat.models import ChatSession, Message
+from services.tracing import trace_request
 
 from .checkpoint import get_checkpointer
 from .graph import build_graph, current_turn
@@ -18,10 +18,20 @@ def _config(session_id: int) -> dict:
     return {"configurable": {"thread_id": f"session-{session_id}"}}
 
 
-def _drive(user, session: ChatSession, graph_input) -> Iterator[dict]:
+def _drive(user, session: ChatSession, graph_input, name: str = "agent") -> Iterator[dict]:
+    question = ""
+    if isinstance(graph_input, dict):
+        question = graph_input["messages"][0].content
+    with trace_request(name, user, session.pk, question) as tracer:
+        yield from _drive_traced(user, session, graph_input, tracer)
+
+
+def _drive_traced(user, session, graph_input, tracer) -> Iterator[dict]:
     graph = build_graph(user, session.pk, get_checkpointer())
     cfg = _config(session.pk)
-    for mode, data in graph.stream(graph_input, cfg, stream_mode=["updates", "messages"]):
+    for mode, data in graph.stream(
+        graph_input, {**cfg, **tracer.config}, stream_mode=["updates", "messages"]
+    ):
         if mode == "messages":
             chunk, meta = data
             if meta.get("langgraph_node") == "agent" and isinstance(chunk.content, str):
@@ -73,7 +83,8 @@ def _drive(user, session: ChatSession, graph_input) -> Iterator[dict]:
                 if key not in seen:
                     seen.add(key)
                     sources.append(s)
-    trace_id = uuid.uuid4().hex
+    trace_id = tracer.trace_id
+    tracer.output = str(final.content)
     Message.objects.create(
         session=session,
         role="assistant",
@@ -118,7 +129,7 @@ def resolve_action(user, action: PendingAction, approve: bool) -> Iterator[dict]
     action.status = PendingAction.Status.APPROVED if approve else PendingAction.Status.REJECTED
     action.save(update_fields=["status"])  # đổi trạng thái NGAY, trong khoá của view
     decision = {"decision": "approve" if approve else "reject"}
-    return _drive(user, action.session, Command(resume=decision))
+    return _drive(user, action.session, Command(resume=decision), "agent-resume")
 
 
 def run_to_result(events: Iterator[dict]) -> dict:
