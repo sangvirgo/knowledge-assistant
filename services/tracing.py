@@ -135,7 +135,8 @@ class RequestTracer(BaseCallbackHandler):
         try:
             if self._trace is not None:
                 self._trace.update(
-                    output=output, metadata={"latency_ms": rec["latency_ms"], "est_cost_usd": cost}
+                    output=self.output,
+                    metadata={"latency_ms": rec["latency_ms"], "est_cost_usd": cost},
                 )
                 _langfuse().flush()
         except Exception:  # noqa: BLE001
