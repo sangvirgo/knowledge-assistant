@@ -21,3 +21,15 @@ def eng_user(depts):
 @pytest.fixture
 def admin_user(depts):
     return User.objects.create_user("boss", password="x", role="admin")
+
+
+@pytest.fixture(autouse=True)
+def _fake_providers(settings, tmp_path):
+    """Test không bao giờ gọi dịch vụ ngoài: embedding giả, Celery chạy đồng bộ, media tạm."""
+    from services.embeddings import FakeEmbedder, set_embedder
+
+    set_embedder(FakeEmbedder())
+    settings.CELERY_TASK_ALWAYS_EAGER = True
+    settings.MEDIA_ROOT = tmp_path
+    yield
+    set_embedder(None)
