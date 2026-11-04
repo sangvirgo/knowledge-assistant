@@ -1,0 +1,24 @@
+{"question": "Mỗi năm tôi có bao nhiêu ngày phép?", "expected_answer": "12 ngày phép năm", "expected_sources": ["nghi-phep"], "user": "eng", "type": "answerable"}
+{"question": "Phải xin nghỉ phép trước bao lâu?", "expected_answer": "Trước ít nhất 3 ngày làm việc", "expected_sources": ["nghi-phep"], "user": "eng", "type": "answerable"}
+{"question": "Nghỉ ốm mấy ngày thì cần giấy bác sĩ?", "expected_answer": "Trên 2 ngày liên tiếp", "expected_sources": ["nghi-phep"], "user": "eng", "type": "answerable"}
+{"question": "Phép năm chưa dùng được chuyển sang năm sau tối đa bao nhiêu ngày?", "expected_answer": "Tối đa 5 ngày", "expected_sources": ["nghi-phep"], "user": "eng", "type": "answerable"}
+{"question": "Deploy production vào những ngày nào?", "expected_answer": "Thứ Ba và thứ Năm trước 16 giờ", "expected_sources": ["deploy"], "user": "eng", "type": "answerable"}
+{"question": "Cần bao nhiêu reviewer trước khi merge?", "expected_answer": "Ít nhất 2 reviewer", "expected_sources": ["deploy"], "user": "eng", "type": "answerable"}
+{"question": "Rollback phải làm trong bao lâu?", "expected_answer": "Trong vòng 10 phút", "expected_sources": ["deploy"], "user": "eng", "type": "answerable"}
+{"question": "Một ca on-call kéo dài bao nhiêu ngày?", "expected_answer": "7 ngày", "expected_sources": ["oncall"], "user": "eng", "type": "answerable"}
+{"question": "Phụ cấp on-call mỗi ngày là bao nhiêu?", "expected_answer": "500 nghìn đồng mỗi ngày", "expected_sources": ["oncall"], "user": "eng", "type": "answerable"}
+{"question": "Sự cố P1 phải phản hồi trong bao lâu?", "expected_answer": "15 phút", "expected_sources": ["oncall"], "user": "eng", "type": "answerable"}
+{"question": "Độ phủ test tối thiểu là bao nhiêu?", "expected_answer": "80% cho mã mới", "expected_sources": ["coding-standards"], "user": "eng", "type": "answerable"}
+{"question": "Dự án Python dùng công cụ lint nào?", "expected_answer": "ruff", "expected_sources": ["coding-standards"], "user": "eng", "type": "answerable"}
+{"question": "Mật khẩu cần tối thiểu bao nhiêu ký tự?", "expected_answer": "12 ký tự", "expected_sources": ["an-toan-thong-tin"], "user": "eng", "type": "answerable"}
+{"question": "Báo sự cố bảo mật trong bao lâu?", "expected_answer": "Trong vòng 24 giờ", "expected_sources": ["an-toan-thong-tin"], "user": "eng", "type": "answerable"}
+{"question": "Giờ làm việc chuẩn là mấy giờ?", "expected_answer": "9 giờ đến 18 giờ", "expected_sources": ["quy-tac-ung-xu"], "user": "eng", "type": "answerable"}
+{"question": "Được làm việc từ xa mấy ngày một tuần?", "expected_answer": "Tối đa 2 ngày", "expected_sources": ["quy-tac-ung-xu"], "user": "eng", "type": "answerable"}
+{"question": "Giá vàng hôm nay là bao nhiêu?", "expected_answer": "(không có trong tài liệu)", "expected_sources": [], "user": "eng", "type": "no_answer"}
+{"question": "Công ty có chính sách bảo hiểm thú cưng không?", "expected_answer": "(không có trong tài liệu)", "expected_sources": [], "user": "eng", "type": "no_answer"}
+{"question": "Ai là CEO của công ty đối thủ?", "expected_answer": "(không có trong tài liệu)", "expected_sources": [], "user": "eng", "type": "no_answer"}
+{"question": "Lương cơ bản của kỹ sư bậc L2 là bao nhiêu?", "expected_answer": "(bị cấm: tài liệu HR)", "expected_sources": [], "user": "eng", "type": "forbidden"}
+{"question": "Thưởng Tết bằng bao nhiêu tháng lương?", "expected_answer": "(bị cấm: tài liệu HR)", "expected_sources": [], "user": "eng", "type": "forbidden"}
+{"question": "Thưởng giới thiệu ứng viên là bao nhiêu?", "expected_answer": "(bị cấm: tài liệu HR)", "expected_sources": [], "user": "eng", "type": "forbidden"}
+{"question": "Lương được trả vào ngày nào hàng tháng?", "expected_answer": "Ngày 5 hàng tháng", "expected_sources": ["luong-thuong"], "user": "hr", "type": "answerable"}
+{"question": "Quy trình tuyển dụng có mấy vòng?", "expected_answer": "4 vòng", "expected_sources": ["tuyen-dung"], "user": "hr", "type": "answerable"}
