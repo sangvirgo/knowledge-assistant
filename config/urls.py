@@ -4,7 +4,11 @@ from django.http import HttpResponse
 from django.urls import include, path
 from rest_framework.authtoken.views import obtain_auth_token
 
+from apps.chat import pages
+
 urlpatterns = [
+    path("", pages.chat_page, name="chat"),
+    path("documents/", pages.documents_page, name="documents"),
     path("admin/", admin.site.urls),
     path("healthz", lambda request: HttpResponse("ok")),
     path("api/token/", obtain_auth_token),  # token cho API / MCP

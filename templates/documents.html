@@ -1,0 +1,19 @@
+{% extends "base.html" %}{% block content %}
+<h2>Tài liệu</h2>
+<form id="up"><input type="text" name="title" placeholder="Tiêu đề" required>
+<input type="file" name="file" accept=".pdf,.md,.txt" required>
+<select name="visibility"><option value="department">Phòng ban</option><option value="company">Toàn công ty</option></select>
+<button>Tải lên</button> <span id="msg"></span></form>
+<table><thead><tr><th>Tiêu đề</th><th>Phạm vi</th><th>Trạng thái</th></tr></thead><tbody id="rows"></tbody></table>
+<script>
+async function load(){const r=await fetch('/api/documents/',{credentials:'same-origin'});const docs=await r.json();
+  document.getElementById('rows').innerHTML='';
+  for(const d of docs){const tr=document.createElement('tr');
+    for(const t of [d.title,d.visibility,d.status+(d.status_detail?' — '+d.status_detail:'')]){const td=document.createElement('td');td.textContent=t;tr.appendChild(td)}
+    document.getElementById('rows').appendChild(tr)}
+  if(docs.some(d=>d.status==='pending'||d.status==='processing'))setTimeout(load,2000)}
+document.getElementById('up').onsubmit=async e=>{e.preventDefault();
+  const r=await fetch('/api/documents/',{method:'POST',body:new FormData(e.target),credentials:'same-origin',headers:{'X-CSRFToken':csrf()}});
+  document.getElementById('msg').textContent=r.ok?'Đã tải lên, đang xử lý...':'Lỗi: '+await r.text();e.target.reset();load()};
+load();
+</script>{% endblock %}

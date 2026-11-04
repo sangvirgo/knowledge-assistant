@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{% block title %}Knowledge Assistant{% endblock %}</title>
+<style>
+ body{font:15px/1.5 system-ui,sans-serif;max-width:860px;margin:0 auto;padding:1rem;color:#222}
+ nav{display:flex;gap:1rem;border-bottom:1px solid #ddd;padding-bottom:.5rem;margin-bottom:1rem}
+ nav form{margin-left:auto}
+ .msg{padding:.6rem .8rem;border-radius:8px;margin:.5rem 0;white-space:pre-wrap}
+ .user{background:#e8f0fe}.bot{background:#f3f3f3}.tool{background:#fff8e1;font-size:13px}
+ .src{font-size:12px;color:#555}.box{border:2px solid #f59e0b;padding:.6rem;border-radius:8px;margin:.5rem 0}
+ input[type=text]{width:75%;padding:.5rem}button{padding:.5rem .8rem}
+ table{width:100%;border-collapse:collapse}td,th{border-bottom:1px solid #eee;padding:.3rem;text-align:left}
+</style></head><body>
+<nav><a href="/">Chat</a><a href="/documents/">Tài liệu</a>
+{% if user.is_authenticated %}<form method="post" action="/logout/">{% csrf_token %}<button>Đăng xuất ({{ user.username }})</button></form>{% endif %}</nav>
+{% block content %}{% endblock %}
+<script>
+const csrf=()=>document.cookie.split('; ').find(c=>c.startsWith('csrftoken='))?.split('=')[1]||'';
+</script>
+</body></html>

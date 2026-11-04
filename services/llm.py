@@ -4,9 +4,10 @@ import os
 import re
 from collections.abc import Sequence
 from typing import Any
+from uuid import uuid4
 
 from langchain_core.language_models.chat_models import BaseChatModel
-from langchain_core.messages import AIMessage, BaseMessage
+from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, ToolMessage
 from langchain_core.outputs import ChatGeneration, ChatResult
 
 NO_ANSWER = "Tôi không tìm thấy thông tin này trong tài liệu được phép truy cập."
@@ -20,18 +21,27 @@ class FakeChatModel(BaseChatModel):
 
     script: list[AIMessage] = []
     calls: list[Any] = []
+    agentic: bool = False  # có tool gắn vào => hành xử như agent đơn giản
 
     @property
     def _llm_type(self) -> str:
         return "fake"
 
     def bind_tools(self, tools: Sequence[Any], **kwargs: Any):
-        return self  # kịch bản đã chứa sẵn tool_calls
+        # Giữ chung `script`/`calls` (shallow copy) để test vẫn quan sát được.
+        return self.model_copy(update={"agentic": True})
 
     def _generate(self, messages: list[BaseMessage], stop=None, run_manager=None, **kw):
         self.calls.append(messages)
         if self.script:
             msg = self.script.pop(0)
+        elif self.agentic and not isinstance(messages[-1], ToolMessage):
+            # dev offline: luôn tìm trước (search_docs) bằng chính câu hỏi
+            q = next(m.content for m in reversed(messages) if isinstance(m, HumanMessage))
+            msg = AIMessage(
+                content="",
+                tool_calls=[{"name": "search_docs", "args": {"query": q}, "id": uuid4().hex}],
+            )
         else:
             msg = AIMessage(content=self._extractive(messages))
         return ChatResult(generations=[ChatGeneration(message=msg)])
@@ -39,7 +49,9 @@ class FakeChatModel(BaseChatModel):
     @staticmethod
     def _extractive(messages: list[BaseMessage]) -> str:
         text = "\n".join(str(m.content) for m in messages)
-        question = str(messages[-1].content).lower()
+        question = next(
+            (str(m.content) for m in reversed(messages) if isinstance(m, HumanMessage)), ""
+        ).lower()
         ctx = re.findall(r"^\[(\d+)\] (.*)$", text, flags=re.MULTILINE)
         q = set(re.findall(r"\w+", question))
         best, best_n = None, 0
@@ -47,7 +59,10 @@ class FakeChatModel(BaseChatModel):
             overlap = len(q & set(re.findall(r"\w+", body.lower())))
             if overlap > best_n:
                 best, best_n = (n, body), overlap
-        return f"{best[1]} [{best[0]}]" if best else NO_ANSWER
+        if not best:
+            return NO_ANSWER
+        body = re.sub(r"^\(document_id=.*?\) ", "", best[1])  # bỏ tiền tố của search_docs
+        return f"{body} [{best[0]}]"
 
 
 _override: BaseChatModel | None = None

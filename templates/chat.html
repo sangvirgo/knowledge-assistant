@@ -1,0 +1,32 @@
+{% extends "base.html" %}{% block content %}
+<div id="log"></div>
+<form id="f"><input type="text" id="q" placeholder="Hỏi về tài liệu nội bộ..." autofocus required>
+<button>Gửi</button></form>
+<script>
+let sessionId=null;const log=document.getElementById('log');
+function add(cls,text){const d=document.createElement('div');d.className='msg '+cls;d.textContent=text;log.appendChild(d);return d}
+async function stream(url,body,bot){
+  const r=await fetch(url,{method:'POST',credentials:'same-origin',
+    headers:{'Content-Type':'application/json','X-CSRFToken':csrf()},body:body?JSON.stringify(body):'{}'});
+  if(!r.ok){bot.textContent='Lỗi '+r.status;return}
+  const reader=r.body.getReader(),dec=new TextDecoder();let buf='';
+  while(true){const {done,value}=await reader.read();if(done)break;buf+=dec.decode(value,{stream:true});
+    let i;while((i=buf.indexOf('\n\n'))>=0){const raw=buf.slice(0,i);buf=buf.slice(i+2);
+      const ev=raw.match(/^event: (.*)$/m)?.[1],data=JSON.parse(raw.match(/^data: (.*)$/m)?.[1]||'{}');handle(ev,data,bot)}}
+}
+function handle(ev,d,bot){
+  if(ev==='session')sessionId=d.session_id;
+  else if(ev==='token')bot.textContent+=d.text;
+  else if(ev==='tool_call')add('tool','🔧 '+d.name+' '+JSON.stringify(d.args));
+  else if(ev==='done'){bot.textContent=d.answer;
+    if(d.sources.length){const s=add('src','Nguồn: '+d.sources.map((x,i)=>x.title+' (đoạn '+x.chunk_index+')').join('; '))}}
+  else if(ev==='interrupt'){const b=document.createElement('div');b.className='box';
+    b.innerHTML='<b>Cần xác nhận:</b> '+d.tool+' <code></code><br>';b.querySelector('code').textContent=JSON.stringify(d.args);
+    for(const [label,act] of [['Duyệt','approve'],['Từ chối','reject']]){const btn=document.createElement('button');btn.textContent=label;
+      btn.onclick=async()=>{b.remove();const nb=add('bot','');await stream('/api/actions/'+d.action_id+'/'+act+'?stream=1',null,nb)};b.appendChild(btn)}
+    log.appendChild(b)}
+}
+document.getElementById('f').onsubmit=async e=>{e.preventDefault();const q=document.getElementById('q');
+  add('user',q.value);const bot=add('bot','');const text=q.value;q.value='';
+  await stream('/api/agent/ask?stream=1',{question:text,...(sessionId?{session_id:sessionId}:{})},bot)};
+</script>{% endblock %}
