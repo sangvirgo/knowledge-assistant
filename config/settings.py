@@ -43,3 +43,12 @@ DATABASES = {"default": dj_database_url.parse(
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 STATIC_URL = "static/"
 USE_TZ = True
+STATIC_ROOT = BASE_DIR / "staticfiles"
+MEDIA_ROOT = BASE_DIR / "media"
+MEDIA_URL = "media/"
+
+REDIS_URL = os.environ.get("REDIS_URL", "redis://localhost:6379/0")
+CELERY_BROKER_URL = REDIS_URL
+CELERY_RESULT_BACKEND = REDIS_URL
+# Test/dev không có worker: đặt CELERY_ALWAYS_EAGER=1 để chạy task đồng bộ.
+CELERY_TASK_ALWAYS_EAGER = os.environ.get("CELERY_ALWAYS_EAGER", "0") == "1"
