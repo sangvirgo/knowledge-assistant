@@ -10,5 +10,6 @@ urlpatterns = [
     path("api/token/", obtain_auth_token),  # token cho API / MCP
     path("login/", auth_views.LoginView.as_view(template_name="login.html"), name="login"),
     path("api/", include("apps.documents.urls")),
+    path("api/", include("apps.chat.urls")),
     path("logout/", auth_views.LogoutView.as_view(), name="logout"),
 ]
