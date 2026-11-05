@@ -184,11 +184,36 @@ docker compose exec web python manage.py createsuperuser
 
 | Service | URL | Notes |
 |---|---|---|
-| Web | http://localhost:8000 | chat `/`, documents `/documents/`, admin `/admin/` |
-| Langfuse | http://localhost:3000 | `admin@example.com` / `adminadmin` (local dev only) |
-| PostgreSQL + pgvector | `localhost:5433` | user / password / db: `app` |
+| Web (UI + API) | http://localhost:8000 (`WEB_PORT`) | chat `/`, documents `/documents/`, admin `/admin/` |
+| Langfuse | http://localhost:3000 (`LANGFUSE_PORT`) | `admin@example.com` / `adminadmin` (local dev only) |
+| PostgreSQL + pgvector | `localhost:5433` (`PG_PORT`) | user / password / db: `app` |
 
 Then in `/admin/`: create **Departments**, and assign each user a `department` and `role`.
+
+### Try it with demo data
+
+```bash
+docker compose exec web python manage.py seed_demo
+```
+
+Idempotent. Creates departments `HR` / `Eng`, three users (password `demo1234`), and ingests the 8 documents in
+[`samples/`](samples/) with mixed visibility:
+
+| User | Department | Sees |
+|---|---|---|
+| `alice` | HR | company docs + salary / hiring docs |
+| `bob` | Eng | company docs + deploy / on-call / coding-standards docs |
+| `admin_demo` | — (admin) | everything |
+
+Log in as each user and ask the same question to see permission scoping, e.g. *"Thưởng Tết bằng bao nhiêu tháng lương?"*
+(answered for `alice`, refused for `bob`) and *"Rollback phải làm trong bao lâu?"* (the reverse). The command prints each
+user's API token.
+
+### Changing ports
+
+Host ports come from `.env` (container ports are fixed): `WEB_PORT` (default 8000), `LANGFUSE_PORT` (3000),
+`PG_PORT` (5433). The web UI and the API are the same Django app, so `WEB_PORT` moves both.
+Example: `WEB_PORT=8100` → http://localhost:8100. `docker compose up -d` applies the change.
 
 > **No API keys needed to try it.** With `LLM_*` / `EMBEDDING_*` unset the app runs on built-in offline fakes
 > (hash-based embeddings, extractive LLM). The whole flow works, but answer quality is *not* representative of a real model.
@@ -246,6 +271,7 @@ curl -N -X POST "localhost:8000/api/agent/ask?stream=1" -H "Authorization: Token
 | `LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY`, `LANGFUSE_HOST` | trace export (optional) |
 | `LLM_PRICE_IN_PER_1M`, `LLM_PRICE_OUT_PER_1M` | USD per 1M tokens, for cost estimates in logs |
 | `MCP_API_TOKEN` | DRF token used by the stdio MCP server |
+| `WEB_PORT`, `LANGFUSE_PORT`, `PG_PORT` | host ports published by Docker Compose |
 | `CELERY_ALWAYS_EAGER` | `1` runs ingestion synchronously (no worker) |
 
 ## Observability
@@ -309,6 +335,7 @@ apps/
   agent/       LangGraph graph · tools · checkpointing · runner (JSON + SSE) · PendingAction, Ticket
 services/      llm.py · embeddings.py · rerank.py · tracing.py   ← seams for test fakes
 mcp_server/    MCP server (core logic + protocol wiring)
+samples/       demo documents for `seed_demo`
 eval/          golden set · corpus · run_eval.py · REPORT.md
 config/        settings · urls · celery
 docs/          architecture · mcp-setup · interview

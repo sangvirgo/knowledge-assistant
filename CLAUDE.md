@@ -9,10 +9,11 @@ Dựng dự án: agent `knowledge-assistant-builder` (`.claude/agents/`), làm t
 Phase 0–11 đã dựng xong. Chưa kiểm chứng với LLM/embedding/rerank thật (mặc định dùng bản giả khi thiếu khóa).
 
 ## Lệnh
-- `docker compose up` chạy toàn bộ hệ thống (web :8000, langfuse :3000, postgres :5433)
+- `docker compose up` chạy toàn bộ hệ thống (cổng host: WEB_PORT=8000, LANGFUSE_PORT=3000, PG_PORT=5433 trong .env)
 - `uv run pytest` chạy test (cần postgres của compose: `docker compose up -d postgres`)
 - `uv run ruff check .` lint
 - `uv run python -m eval.run_eval` đánh giá retrieval
+- `docker compose exec web python manage.py seed_demo` nạp dữ liệu demo (alice/bob/admin_demo, mật khẩu demo1234)
 - `uv run python -m mcp_server` MCP server (xem docs/mcp-setup.md)
 
 ## Sơ đồ
