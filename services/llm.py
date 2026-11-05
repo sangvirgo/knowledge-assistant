@@ -10,6 +10,12 @@ from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, ToolMessage
 from langchain_core.outputs import ChatGeneration, ChatResult
 
+# Từ chức năng tiếng Việt: không tính khi so khớp "extractive" của bản giả.
+_STOP = set(
+    "là có của và cho không khi được phải trong bao nhiêu mấy một các những này đó thì sẽ đã "
+    "ở với để về từ như hay hoặc nào gì sao tôi bạn mỗi lâu làm".split()
+)
+
 NO_ANSWER = "Tôi không tìm thấy thông tin này trong tài liệu được phép truy cập."
 
 
@@ -53,11 +59,12 @@ class FakeChatModel(BaseChatModel):
             (str(m.content) for m in reversed(messages) if isinstance(m, HumanMessage)), ""
         ).lower()
         ctx = re.findall(r"^\[(\d+)\] (.*)$", text, flags=re.MULTILINE)
-        q = set(re.findall(r"\w+", question))
+        q = set(re.findall(r"\w+", question)) - _STOP
         best, best_n = None, 0
+        need = 2 if len(q) >= 3 else 1  # câu dài: cần >=2 từ nội dung trùng, tránh khớp nhầm
         for n, body in ctx:
-            overlap = len(q & set(re.findall(r"\w+", body.lower())))
-            if overlap > best_n:
+            overlap = len(q & (set(re.findall(r"\w+", body.lower())) - _STOP))
+            if overlap >= need and overlap > best_n:
                 best, best_n = (n, body), overlap
         if not best:
             return NO_ANSWER
